@@ -1,6 +1,7 @@
 import pickle
 import streamlit as st
 import numpy as np
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 
 
