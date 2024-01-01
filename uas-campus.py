@@ -2,6 +2,7 @@ import pickle
 import streamlit as st
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
+from sklearn.neighbors import KNeighborsClassifier
 
 
 # Load the KNN model
