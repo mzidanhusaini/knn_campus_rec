@@ -35,24 +35,21 @@ def label_encode_column(le, column_data):
     return encoded_data
 
 # Melakukan label encoding untuk setiap kolom
-le_gender, _ = label_encode_column(*encoded_gender)
-le_hsc_b, _ = label_encode_column(*encoded_hsc_b)
-le_hsc_s, _ = label_encode_column(*encoded_hsc_s)
-le_degree_t, _ = label_encode_column(*encoded_degree_t)
-le_workex, _ = label_encode_column(*encoded_workex)
-le_salary, _ = label_encode_column(*encoded_salary)
-le_specialisation, _ = label_encode_column(*encoded_specialisation)
+encoded_gender = label_encode_column(['Laki-Laki', 'Perempuan'])
+encoded_hsc_b = label_encode_column(['Central', 'Others'])
+encoded_hsc_s = label_encode_column(['Commerce', 'Science', 'Arts'])
+encoded_degree_t = label_encode_column(['Sci&Tech', 'Comm&Mgmt', 'Others'])
+encoded_workex = label_encode_column(['No', 'Yes'])
+encoded_salary = label_encode_column(['rendah', 'sedang', 'tinggi'])
+encoded_specialisation = label_encode_column(['Mkt&HR', 'Mkt&Fin'])
 
 predict = ''
 
 if st.button('Prediksi'):
-    # Note: Pass a single 2D array with the encoded values
-    input_data = [[le_gender, le_hsc_b, le_hsc_s, le_degree_t,
-                   le_workex, le_salary, le_specialisation, ssc_p,
-                   hsc_p, degree_p, etest_p, mba_p]]
-
-    predict = knn_model.predict(input_data)
-
+    predict = knn_model.predict([[encoded_gender,encoded_hsc_b,encoded_hsc_s,encoded_degree_t,
+                                  encoded_workex,encoded_salary,encoded_specialisation,ssc_p,
+                                  hsc_p,degree_p,etest_p,mba_p]])
+    
     if predict == 0:
         predict = "Kandidat Lolos"
     else:
