@@ -264,3 +264,6 @@ model yang dibuat mendapatkan nilai akurasi 80%
 
 ## Deployment
 
+[Deploy Aplikasi](https://uas-campus-zidan.streamlit.app/)
+
+<img width="960" alt="image" src="https://github.com/mzidanhusaini/knn_campus_rec/assets/149399304/84382fef-5689-4333-83b8-1de706c6d278">
