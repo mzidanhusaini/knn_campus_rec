@@ -9,7 +9,7 @@ Rekrutmen kampus adalah strategi untuk mencari, menarik, dan merekrut talenta mu
 
 ## Business Understanding
 
-Berdasarkan domain projek tersebut maka pembuatan sistem yang membantu dalam proses klasifikasi penempatan mahasiswa di dunia industri akan menjadi hal yang baik dan berguna.
+Berdasarkan domain projek tersebut maka pembuatan sistem yang membantu dalam proses klasifikasi penempatan mahasiswa yang telah lulus untuk masuk di dunia industri supaya lebih terencana dan terarah sesuai dengan pengalaman dan kemampuan yang dimiliki oleh mahasiswa tersebut.
 
 Bagian laporan ini mencakup:
 
