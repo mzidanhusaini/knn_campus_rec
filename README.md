@@ -120,39 +120,147 @@ df = df.drop(['sl_no','ssc_b'],axis=1)
 ```
 
 dikarenakan terdapat data yang kosong dan setelah di analisis kembali data tersebut tidak bisa dihapus maka data tersebut diisi dengan angka 0:
+
 ```
 df['salary'] = df['salary'].fillna(0)
 ```
 
 selanjutnya merubah fitur gaji menjadi range rendah, sedang dan tinggi:
 
+```
+df['salary'] = pd.cut(df['salary'], bins=[0, 300000, 600000, 940000], labels=['rendah', 'sedang', 'tinggi'])
+```
+dikarenakan setelah rubah menjadi kategori terdapat dataset yang Null lagi maka dilakukan proses pengisian data yang null dengan rendah, dikarenakan nilai pada fitur gaji adalah 0:
+
+```
+df['salary'].fillna('rendah', inplace=True)
+```
+
+selanjutnya adalah pembagian fitur numeric dan kategori:
+
+```
+numerical = []
+catgcol = []
+
+for col in df.columns:
+  if df[col].dtype=='float64':
+    numerical.append(col)
+  else:
+    catgcol.append(col)
+
+for col in df.columns:
+  if col in numerical:
+    df[col].fillna(df[col].median(), inplace=True)
+  else:
+    df[col].fillna(df[col].mode()[0], inplace=True)
+```
+setelah dipisahkan data kategori dan numeric, mari kita transform data tersebut menjadi numeric dengan library LabelEncoder:
+
+```
+le = LabelEncoder()
+
+for col in catgcol:
+  df[col] = le.fit_transform(df[col])
+```
+
+dataset siap untuk dilanjut ke tahap modeling.
 
 ## Modeling
-Tahapan ini membahas mengenai model machine learning yang digunakan untuk menyelesaikan permasalahan. Anda perlu menjelaskan tahapan dan parameter yang digunakan pada proses pemodelan.
+1. menentukan nilai X dan Y:
+```
+X = df.drop("status",axis = 1)
+y = df.status
+```
+2. pembagian data train dan test:
+```
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.3,random_state=0)
+```
+3. model fitting
+```
+test_scores = []
+train_scores = []
 
-**Rubrik/Kriteria Tambahan (Opsional)**: 
-- Menjelaskan kelebihan dan kekurangan dari setiap algoritma yang digunakan.
-- Jika menggunakan satu algoritma pada solution statement, lakukan proses improvement terhadap model dengan hyperparameter tuning. **Jelaskan proses improvement yang dilakukan**.
-- Jika menggunakan dua atau lebih algoritma pada solution statement, maka pilih model terbaik sebagai solusi. **Jelaskan mengapa memilih model tersebut sebagai model terbaik**.
+for i in range(1,15):
+
+    knn = KNeighborsClassifier(i)
+    knn.fit(X_train,y_train)
+
+    train_scores.append(knn.score(X_train,y_train))
+    test_scores.append(knn.score(X_test,y_test))
+```
+4. cek akurasi data training:
+```
+max_train_score = max(train_scores)
+train_scores_ind = [i for i, v in enumerate(train_scores) if v == max_train_score]
+print('Max train score {} % and k = {}'.format(max_train_score*100,list(map(lambda x: x+1, train_scores_ind))))
+```
+<img width="181" alt="image" src="https://github.com/mzidanhusaini/knn_campus_rec/assets/149399304/041c7e13-ab20-4f8c-8a16-fadc01f1e21d">
+
+max akurasi dari data training adalah 100% dengan nilai k = 1
+
+5. cek akurasi testing:
+```
+max_test_score = max(test_scores)
+test_scores_ind = [i for i, v in enumerate(test_scores) if v == max_test_score]
+print('Max test score {} % and k = {}'.format(max_test_score*100,list(map(lambda x: x+1, test_scores_ind))))
+```
+<img width="256" alt="image" src="https://github.com/mzidanhusaini/knn_campus_rec/assets/149399304/84a6d2b9-c78b-4b6b-b1c5-ef6b2f75ea3f">
+
+akurasi dari data testing adalah 80% dengan nilai k = [7, 9, 10, 11, 13, 14]
+
+6. fitting model dengan menentukan nilai k sesuai dengan rekomendasi dari data testing sebelumnya (7):
+```
+knn = KNeighborsClassifier(7)
+
+knn.fit(X_train,y_train)
+knn.score(X_test,y_test)
+```
 
 ## Evaluation
-Pada bagian ini anda perlu menyebutkan metrik evaluasi yang digunakan. Lalu anda perlu menjelaskan hasil proyek berdasarkan metrik evaluasi yang digunakan.
+setelah model dibuat dilakukan tahap evaluasi pengujian model dengan mencoba memasukan data didalam dataset untuk pengecekan hasil apakah sudah sesuai atau belum:
+```
+input_data = (1,67.00,91.00,1,1,58.00,2,0,55.0,1,58.80,0)
 
-Sebagai contoh, Anda memiih kasus klasifikasi dan menggunakan metrik **akurasi, precision, recall, dan F1 score**. Jelaskan mengenai beberapa hal berikut:
-- Penjelasan mengenai metrik yang digunakan
-- Menjelaskan hasil proyek berdasarkan metrik evaluasi
+input_data_as_numpy_array = np.array(input_data)
 
-Ingatlah, metrik evaluasi yang digunakan harus sesuai dengan konteks data, problem statement, dan solusi yang diinginkan.
+input_data_reshaped = input_data_as_numpy_array.reshape(1,-1)
 
-**Rubrik/Kriteria Tambahan (Opsional)**: 
-- Menjelaskan formula metrik dan bagaimana metrik tersebut bekerja.
+prediction = knn.predict(input_data_reshaped)
+print(prediction)
+
+if (prediction[0]==0):
+  print('Mahasiswa tidak lolos')
+else:
+  print('Mahasiswa lolos')
+```
+
+```
+[1]
+Mahasiswa lolos
+```
+
+hasil prediksi yang di dapatkan sudah sesuai.
+
+Pada bagian ini metrik evaluasi yang digunakan adalah penggunaan Confusion matrix:
+```
+y_pred = knn.predict(X_test)
+
+cnf_matrix = metrics.confusion_matrix(y_test, y_pred)
+p = sns.heatmap(pd.DataFrame(cnf_matrix), annot=True, cmap="YlGnBu" ,fmt='g')
+plt.title('Confusion matrix', y=1.1)
+plt.ylabel('Actual label')
+plt.xlabel('Predicted label')
+```
+
+![image](https://github.com/mzidanhusaini/knn_campus_rec/assets/149399304/e394f486-b0cd-42fe-8c8f-3cbbc8e4b64b)
+
+saat dilakukan proses pengujuan kategori tidak lolos, model dapat memprediksi 9 benar dan 3 salah lalu untuk kategori lolos model dapat memprediksi 43 data dengan benar dan 10 salah dengan total data testing sebanyak 65 data (53 kategori lolos dan 11 tidak lolos)
+
+adapun pengecekan untuk classification report sebagai berikut:
+
+<img width="263" alt="image" src="https://github.com/mzidanhusaini/knn_campus_rec/assets/149399304/9d9b814b-7726-40ed-ab7a-9a359b8a4f6c">
+
+model yang dibuat mendapatkan nilai akurasi 80%
 
 ## Deployment
-pada bagian ini anda memberikan link project yang diupload melalui streamlit share. boleh ditambahkan screen shoot halaman webnya.
-
-**---Ini adalah bagian akhir laporan---**
-
-_Catatan:_
-- _Anda dapat menambahkan gambar, kode, atau tabel ke dalam laporan jika diperlukan. Temukan caranya pada contoh dokumen markdown di situs editor [Dillinger](https://dillinger.io/), [Github Guides: Mastering markdown](https://guides.github.com/features/mastering-markdown/), atau sumber lain di internet. Semangat!_
-- Jika terdapat penjelasan yang harus menyertakan code snippet, tuliskan dengan sewajarnya. Tidak perlu menuliskan keseluruhan kode project, cukup bagian yang ingin dijelaskan saja.
 
